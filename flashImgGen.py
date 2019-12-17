@@ -89,12 +89,12 @@ class filesTreeview(ttk.Treeview):
 		
 	def fill_treeview(self, filesdata):
 		self.filesdata = filesdata
-		print self.filesdata
+		#print self.filesdata
 		for item in self.get_children():
 			self.delete(item)
 			
 		for f in self.filesdata:
-			print f
+			#print f
 			self.insert('',"end",values=(f[0], f[1]))
 
 	
@@ -179,8 +179,15 @@ class Application(ttk.Frame):
 		self.platformOpt = ttk.OptionMenu(flashOptionFrame, self.v, *optionList)
 		self.platformOpt.grid(row = 0, column=1, sticky=tk.W, padx=10)
 
+		progressFrame = ttk.Frame(self)
+		progressFrame.grid(row = 3, sticky=tk.NSEW, pady=3)
+		
+		self.pbar = ttk.Progressbar(progressFrame,orient ="horizontal",length = 500, mode ="determinate")
+		self.pbar.grid(padx=10, sticky=tk.NSEW)
+		self.pbar["maximum"] = 100
+
 		actionFrame = ttk.Frame(self)
-		actionFrame.grid(row = 3, sticky=tk.NSEW, pady=3)
+		actionFrame.grid(row = 4, sticky=tk.NSEW, pady=3)
 		
 		self.genOutFileBtn = ttk.Button(actionFrame, text="Generate Flash Image", command=self.genOutFile)
 		self.genOutFileBtn.grid(padx=10, row = 0, column = 0)
@@ -277,15 +284,25 @@ class Application(ttk.Frame):
 			if fo.tell() > fdata[1]:
 				tkMessageBox.showerror("Error", "OVERLAP %s" % fdata[0])
 				return
+				
+			self.updateProgress(float(fo.tell())/size)
 			
 			for i in range(fo.tell(), fdata[1]):
 				fo.write(bytearray(paddingChar))
+			self.updateProgress(float(fo.tell())/size)
+			
 			fi = open(fdata[0], "rb")			
 			fo.write(fi.read())
+			if (fo.tell() > size):
+				tkMessageBox.showerror("Error", "%s out of flash" % fdata[0])
+				return
+			self.updateProgress(float(fo.tell())/size)
+			
 			fi.close()
 		# padding to end fo file
 		for i in range(fo.tell(), size):
 			fo.write(bytearray(paddingChar))
+		self.updateProgress(float(fo.tell())/size)
 		fo.close()
 	
 	def saveCfgFile(self):
@@ -304,6 +321,11 @@ class Application(ttk.Frame):
 		self.cfg.write()
 		return
 	
+	def updateProgress(self, value):
+		#print value
+		self.pbar["value"] = int(value * self.pbar["maximum"])
+		self.update_idletasks()
+		#print self.pbar["value"]
 
 app = Application() 
 app.master.title('FlashImgGen') 
