@@ -16,7 +16,13 @@ Useage:
 Change History:
 ---------------
 
+* 2019-12-17
+
+	* Add progress bar.
+	
+	* Remove debug info.
+
 * 2019-12-16
 
-	* First version.
+	* First usable version.
 		

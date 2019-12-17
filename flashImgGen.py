@@ -272,9 +272,8 @@ class Application(ttk.Frame):
 		
 		self.tv.update_filesdata()
 		
-		self.writeOutputFile(outputFile, outputSize)
-		
-		tkMessageBox.showinfo("Info", "Done.")
+		if self.writeOutputFile(outputFile, outputSize) == True:
+			tkMessageBox.showinfo("Info", "Done.")
 	
 	def writeOutputFile(self, filename, size):
 		fo = open(filename, "wb")
@@ -283,7 +282,7 @@ class Application(ttk.Frame):
 			#print fdata
 			if fo.tell() > fdata[1]:
 				tkMessageBox.showerror("Error", "OVERLAP %s" % fdata[0])
-				return
+				return False
 				
 			self.updateProgress(float(fo.tell())/size)
 			
@@ -295,7 +294,7 @@ class Application(ttk.Frame):
 			fo.write(fi.read())
 			if (fo.tell() > size):
 				tkMessageBox.showerror("Error", "%s out of flash" % fdata[0])
-				return
+				return False
 			self.updateProgress(float(fo.tell())/size)
 			
 			fi.close()
@@ -304,6 +303,7 @@ class Application(ttk.Frame):
 			fo.write(bytearray(paddingChar))
 		self.updateProgress(float(fo.tell())/size)
 		fo.close()
+		return True
 	
 	def saveCfgFile(self):
 		try:
