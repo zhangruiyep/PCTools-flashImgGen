@@ -1,16 +1,16 @@
-import Tkinter as tk
-import tkFileDialog
-import tkMessageBox
+import tkinter as tk
+import tkinter.filedialog
+import tkinter.messagebox
 import os
-import ttk
+import tkinter.ttk
 import types
 import datetime
 import cfg
 import csvop
 	
-class AddFrame(ttk.Frame):
+class AddFrame(tkinter.ttk.Frame):
 	def __init__(self, master=None, parentIdx=""):
-		ttk.Frame.__init__(self, master)
+		tkinter.ttk.Frame.__init__(self, master)
 		self.grid()
 		self.tv = master
 		self.parentIdx = parentIdx
@@ -18,41 +18,41 @@ class AddFrame(ttk.Frame):
 		
 	def createWidgets(self):
 		curRow = 0
-		label = ttk.Label(self, text="File:", justify=tk.LEFT)
+		label = tkinter.ttk.Label(self, text="File:", justify=tk.LEFT)
 		label.grid(row = curRow)
 
-		self.fileEntry = ttk.Entry(self)
+		self.fileEntry = tkinter.ttk.Entry(self)
 		self.fileEntry.delete(0, tk.END)
 		self.fileEntry.grid(row=curRow, column=1)		
 
 		curRow += 1
-		label = ttk.Label(self, text="Offset(HEX):", justify=tk.LEFT)
+		label = tkinter.ttk.Label(self, text="Offset(HEX):", justify=tk.LEFT)
 		label.grid(row=curRow)
 
-		self.offEntry = ttk.Entry(self)
+		self.offEntry = tkinter.ttk.Entry(self)
 		self.offEntry.delete(0, tk.END)
 		self.offEntry.grid(row=curRow, column=1)		
 
-		self.getFileBtn = ttk.Button(self, text="Choose", command=self.chooseFile, width=10)
+		self.getFileBtn = tkinter.ttk.Button(self, text="Choose", command=self.chooseFile, width=10)
 		self.getFileBtn.grid(row=0, column=2)
 		
 		curRow += 1
-		OKBtn = ttk.Button(self, text="OK", command=self.addRecord)
+		OKBtn = tkinter.ttk.Button(self, text="OK", command=self.addRecord)
 		OKBtn.grid(row=curRow)
-		CancelBtn = ttk.Button(self, text="Cancel", command=self.cancelAdd)
+		CancelBtn = tkinter.ttk.Button(self, text="Cancel", command=self.cancelAdd)
 		CancelBtn.grid(row=curRow, column=1)
 
 	def addRecord(self):
 		filename = self.fileEntry.get()
 		if not os.path.exists(filename):
-			tkMessageBox.showwarning("Warning", "File not found")
+			tkinter.messagebox.showwarning("Warning", "File not found")
 			return
 		
 		offsetStr = self.offEntry.get()
 		try:
 			offset = int(offsetStr, 16)
 		except:
-			tkMessageBox.showwarning("Warning", "Offset Invalid")
+			tkinter.messagebox.showwarning("Warning", "Offset Invalid")
 			return
 		
 		self.tv.insert(self.parentIdx, "end", values=(filename, self.offEntry.get()))
@@ -63,7 +63,7 @@ class AddFrame(ttk.Frame):
 		self.destroy()
 		
 	def chooseFile(self):
-		filename = tkFileDialog.askopenfilename()
+		filename = tkinter.filedialog.askopenfilename()
 		if (filename != None) and (filename != ""):
 			self.fileEntry.delete(0, tk.END)
 			self.fileEntry.insert(0, os.path.realpath(filename))
@@ -71,9 +71,9 @@ class AddFrame(ttk.Frame):
 def takeOffset(elem):
 	return elem[1]
 
-class filesTreeview(ttk.Treeview):
+class filesTreeview(tkinter.ttk.Treeview):
 	def __init__(self, master=None):
-		ttk.Treeview.__init__(self, master)
+		tkinter.ttk.Treeview.__init__(self, master)
 		self['columns']=("filename", "offset")
 		self.filesdata = []
 		self.grid(sticky=tk.NSEW)
@@ -102,7 +102,7 @@ class filesTreeview(ttk.Treeview):
 		self.filesdata = []
 		for i in self.get_children():
 			#print self.item(i)["values"]
-			if type(self.item(i)["values"][1]) == types.IntType:
+			if type(self.item(i)["values"][1]) == int:
 				off = int(str(self.item(i)["values"][1]), 16)
 			else:
 				off = int(self.item(i)["values"][1], 16)
@@ -110,9 +110,9 @@ class filesTreeview(ttk.Treeview):
 		#print self.filesdata
 		self.filesdata.sort(key=takeOffset)
 					
-class Application(ttk.Frame):
+class Application(tkinter.ttk.Frame):
 	def __init__(self, master=None):
-		ttk.Frame.__init__(self, master) 
+		tkinter.ttk.Frame.__init__(self, master) 
 		self.cfg = cfg.configFile()
 		self.columnconfigure(0, weight=1)
 		self.rowconfigure(1, weight=1)
@@ -120,7 +120,7 @@ class Application(ttk.Frame):
 		self.createWidgets()
 		
 	def createWidgets(self):
-		tv_frame = ttk.Frame(self)
+		tv_frame = tkinter.ttk.Frame(self)
 		tv_frame.grid(row = 2, sticky=tk.NSEW, pady = 3)
 		
 		self.tv = filesTreeview(tv_frame)
@@ -131,7 +131,7 @@ class Application(ttk.Frame):
 			filesdata = []
 		self.tv.fill_treeview(filesdata)
 				
-		self.sb = ttk.Scrollbar(tv_frame, orient=tk.VERTICAL, command=self.tv.yview)
+		self.sb = tkinter.ttk.Scrollbar(tv_frame, orient=tk.VERTICAL, command=self.tv.yview)
 		self.sb.grid(row = 0, column=1, sticky=tk.NS)
 		
 		self.tv.configure(yscrollcommand=self.sb.set)
@@ -143,28 +143,28 @@ class Application(ttk.Frame):
 		self.entryPopup = ""
 		self.record_frame = ""
 
-		output_frame = ttk.Frame(self)
+		output_frame = tkinter.ttk.Frame(self)
 		output_frame.grid(row = 0, sticky=tk.NSEW, pady = 3)
 		
-		self.Info = ttk.Label(output_frame, text="Output file:", justify=tk.LEFT)
+		self.Info = tkinter.ttk.Label(output_frame, text="Output file:", justify=tk.LEFT)
 		self.Info.grid(row=0, sticky=tk.W, padx=10)
 		
-		self.outputFilePathEntry = ttk.Entry(output_frame, width = 40)
+		self.outputFilePathEntry = tkinter.ttk.Entry(output_frame, width = 40)
 		self.outputFilePathEntry.grid(row=0, column=1, padx=10)
 		if self.cfg:
 			try:
 				self.outputFilePathEntry.delete(0, tk.END)
 				self.outputFilePathEntry.insert(0, self.cfg.cp.get("OutFile", "Name"))
 			except:
-				print "can not get file name from cfg"
+				print("can not get file name from cfg")
 
-		self.getFileBtn = ttk.Button(output_frame, text="Choose", command=self.chooseOutputFile, width=10)
+		self.getFileBtn = tkinter.ttk.Button(output_frame, text="Choose", command=self.chooseOutputFile, width=10)
 		self.getFileBtn.grid(row=0, column=2, padx=10)
 		
-		flashOptionFrame = ttk.Frame(self)
+		flashOptionFrame = tkinter.ttk.Frame(self)
 		flashOptionFrame.grid(row = 1, sticky=tk.NSEW, pady=3)
 		
-		self.flashSizeInfo = ttk.Label(flashOptionFrame, text="Flash size(MB):", justify=tk.LEFT)
+		self.flashSizeInfo = tkinter.ttk.Label(flashOptionFrame, text="Flash size(MB):", justify=tk.LEFT)
 		self.flashSizeInfo.grid(row = 0, sticky=tk.W, padx=10)
 
 		optionList = ["", "8", "4", "2", "1"]
@@ -174,25 +174,25 @@ class Application(ttk.Frame):
 			try:
 				self.v.set(self.cfg.cp.get("OutFile", "Size"))
 			except:
-				print "can not get file size from cfg"
+				print("can not get file size from cfg")
 			
-		self.platformOpt = ttk.OptionMenu(flashOptionFrame, self.v, *optionList)
+		self.platformOpt = tkinter.ttk.OptionMenu(flashOptionFrame, self.v, *optionList)
 		self.platformOpt.grid(row = 0, column=1, sticky=tk.W, padx=10)
 
-		progressFrame = ttk.Frame(self)
+		progressFrame = tkinter.ttk.Frame(self)
 		progressFrame.grid(row = 3, sticky=tk.NSEW, pady=3)
 		
-		self.pbar = ttk.Progressbar(progressFrame,orient ="horizontal",length = 500, mode ="determinate")
+		self.pbar = tkinter.ttk.Progressbar(progressFrame,orient ="horizontal",length = 500, mode ="determinate")
 		self.pbar.grid(padx=10, sticky=tk.NSEW)
 		self.pbar["maximum"] = 100
 
-		actionFrame = ttk.Frame(self)
+		actionFrame = tkinter.ttk.Frame(self)
 		actionFrame.grid(row = 4, sticky=tk.NSEW, pady=3)
 		
-		self.genOutFileBtn = ttk.Button(actionFrame, text="Generate Flash Image", command=self.genOutFile)
+		self.genOutFileBtn = tkinter.ttk.Button(actionFrame, text="Generate Flash Image", command=self.genOutFile)
 		self.genOutFileBtn.grid(padx=10, row = 0, column = 0)
 
-		self.saveCfgFileBtn = ttk.Button(actionFrame, text="Save Configuration", command=self.saveCfgFile)
+		self.saveCfgFileBtn = tkinter.ttk.Button(actionFrame, text="Save Configuration", command=self.saveCfgFile)
 		self.saveCfgFileBtn.grid(padx=10, row = 0, column = 1)		
 
 	def show_context_menu(self, event):
@@ -254,7 +254,7 @@ class Application(ttk.Frame):
 		self.entryPopup.destroy()
 			
 	def chooseOutputFile(self):
-		filename = tkFileDialog.asksaveasfilename()
+		filename = tkinter.filedialog.asksaveasfilename()
 		if (filename != None) and (filename != ""):
 			self.outputFilePathEntry.delete(0, tk.END)
 			self.outputFilePathEntry.insert(0, os.path.realpath(filename))
@@ -262,7 +262,7 @@ class Application(ttk.Frame):
 	def genOutFile(self):
 		outputFile = self.outputFilePathEntry.get().strip()
 		if not outputFile:
-			tkMessageBox.showwarning("Warning", "Output file not set")
+			tkinter.messagebox.showwarning("Warning", "Output file not set")
 			return
 		#print outputFile
 		
@@ -273,7 +273,7 @@ class Application(ttk.Frame):
 		self.tv.update_filesdata()
 		
 		if self.writeOutputFile(outputFile, outputSize) == True:
-			tkMessageBox.showinfo("Info", "Done.")
+			tkinter.messagebox.showinfo("Info", "Done.")
 	
 	def writeOutputFile(self, filename, size):
 		fo = open(filename, "wb")
@@ -281,7 +281,7 @@ class Application(ttk.Frame):
 		for fdata in self.tv.filesdata:
 			#print fdata
 			if fo.tell() > fdata[1]:
-				tkMessageBox.showerror("Error", "OVERLAP %s" % fdata[0])
+				tkinter.messagebox.showerror("Error", "OVERLAP %s" % fdata[0])
 				return False
 				
 			self.updateProgress(float(fo.tell())/size)
@@ -293,7 +293,7 @@ class Application(ttk.Frame):
 			fi = open(fdata[0], "rb")			
 			fo.write(fi.read())
 			if (fo.tell() > size):
-				tkMessageBox.showerror("Error", "%s out of flash" % fdata[0])
+				tkinter.messagebox.showerror("Error", "%s out of flash" % fdata[0])
 				return False
 			self.updateProgress(float(fo.tell())/size)
 			
@@ -309,7 +309,7 @@ class Application(ttk.Frame):
 		try:
 			self.cfg.cp.add_section("OutFile")
 		except:
-			print "section exist"
+			print("section exist")
 		outFileName = self.outputFilePathEntry.get().strip()
 		self.cfg.cp.set("OutFile", "Name", ''.join([x.encode('utf-8') for x in outFileName]))
 		self.cfg.cp.set("OutFile", "Size", self.v.get())

@@ -10,14 +10,14 @@ def readDataFile(filename):
 	return filesdata
 
 def writeDataFile(filesdata, filename):
-	print "saving %s" % filename
+	print("saving %s" % filename)
 	with open(filename, "wb") as f:
 		wtr = csv.writer(f)
 		for r in filesdata:
 			row = []
 			row.append(''.join([x.encode('utf-8') for x in r[0]]))
 			row.append(hex(int(r[1]))[2:])
-			print row
+			print(row)
 			wtr.writerow(row)
 		f.close()
 	
