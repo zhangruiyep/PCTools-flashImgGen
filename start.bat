@@ -1,1 +1,1 @@
-d:\python38\python.exe flashImgGen.py
+d:\python38\python.exe gui.py

@@ -15,6 +15,15 @@ Useage:
 
 Change History:
 ---------------
+* 2020-01-04
+	
+	* Update file ops to python 3.8
+	
+	* Seperate flash image module out of GUI
+
+* 2020-01-03
+
+	* Upgrade code to python 3.8
 
 * 2019-12-17
 

@@ -7,7 +7,8 @@ import types
 import datetime
 import cfg
 import csvop
-	
+import flashImage
+
 class AddFrame(tkinter.ttk.Frame):
 	def __init__(self, master=None, parentIdx=""):
 		tkinter.ttk.Frame.__init__(self, master)
@@ -89,25 +90,21 @@ class filesTreeview(tkinter.ttk.Treeview):
 		
 	def fill_treeview(self, filesdata):
 		self.filesdata = filesdata
-		#print self.filesdata
 		for item in self.get_children():
 			self.delete(item)
 			
 		for f in self.filesdata:
-			#print f
 			self.insert('',"end",values=(f[0], f[1]))
 
 	
 	def update_filesdata(self):
 		self.filesdata = []
 		for i in self.get_children():
-			#print self.item(i)["values"]
 			if type(self.item(i)["values"][1]) == int:
 				off = int(str(self.item(i)["values"][1]), 16)
 			else:
 				off = int(self.item(i)["values"][1], 16)
 			self.filesdata.append([self.item(i)["values"][0], off])
-		#print self.filesdata
 		self.filesdata.sort(key=takeOffset)
 					
 class Application(tkinter.ttk.Frame):
@@ -154,7 +151,7 @@ class Application(tkinter.ttk.Frame):
 		if self.cfg:
 			try:
 				self.outputFilePathEntry.delete(0, tk.END)
-				self.outputFilePathEntry.insert(0, self.cfg.cp.get("OutFile", "Name"))
+				self.outputFilePathEntry.insert(0, self.cfg.cp['OutFile']['Name'])
 			except:
 				print("can not get file name from cfg")
 
@@ -172,7 +169,7 @@ class Application(tkinter.ttk.Frame):
 		self.v.set(optionList[1])
 		if self.cfg:
 			try:
-				self.v.set(self.cfg.cp.get("OutFile", "Size"))
+				self.v.set(self.cfg.cp['OutFile']['Size'])
 			except:
 				print("can not get file size from cfg")
 			
@@ -201,14 +198,11 @@ class Application(tkinter.ttk.Frame):
  
 
 	def delete_handler(self):
-		#print "in copy_handler"
-		#print self.event.x, self.event.y
 		# close previous popups
 		if self.entryPopup:
 			self.entryPopup.destroy()
 			
 		self.edit_row = self.tv.identify_row(self.event.y)
-		#print self.edit_row
 		
 		self.tv.focus(self.edit_row)
 		
@@ -223,12 +217,8 @@ class Application(tkinter.ttk.Frame):
 
 		self.edit_row = self.tv.identify_row(self.event.y)
 		self.edit_column = self.tv.identify_column(self.event.x)
-		#print self.tv.identify_region(self.event.x, self.event.y)
-		#print self.edit_row
-		#x,y,width,height = self.tv.bbox(self.edit_row)
 		
 		parent = self.tv.parent(self.edit_row)
-		#print parent
 		self.addDataFrame(parent)
 			
 			
@@ -264,68 +254,37 @@ class Application(tkinter.ttk.Frame):
 		if not outputFile:
 			tkinter.messagebox.showwarning("Warning", "Output file not set")
 			return
-		#print outputFile
 		
 		outputSizeMB = self.v.get()
 		outputSize = int(outputSizeMB)*1024*1024
-		#print outputSize
 		
 		self.tv.update_filesdata()
 		
-		if self.writeOutputFile(outputFile, outputSize) == True:
-			tkinter.messagebox.showinfo("Info", "Done.")
-	
-	def writeOutputFile(self, filename, size):
-		fo = open(filename, "wb")
-		paddingChar = [255]
-		for fdata in self.tv.filesdata:
-			#print fdata
-			if fo.tell() > fdata[1]:
-				tkinter.messagebox.showerror("Error", "OVERLAP %s" % fdata[0])
-				return False
-				
-			self.updateProgress(float(fo.tell())/size)
-			
-			for i in range(fo.tell(), fdata[1]):
-				fo.write(bytearray(paddingChar))
-			self.updateProgress(float(fo.tell())/size)
-			
-			fi = open(fdata[0], "rb")			
-			fo.write(fi.read())
-			if (fo.tell() > size):
-				tkinter.messagebox.showerror("Error", "%s out of flash" % fdata[0])
-				return False
-			self.updateProgress(float(fo.tell())/size)
-			
-			fi.close()
-		# padding to end fo file
-		for i in range(fo.tell(), size):
-			fo.write(bytearray(paddingChar))
-		self.updateProgress(float(fo.tell())/size)
-		fo.close()
-		return True
-	
+		img = flashImage.flashImage(outputFile, outputSize, self.tv.filesdata, self.updateProgress)
+		retval = img.writeFile()
+		if (retval.result == "Error"):
+			tkinter.messagebox.showerror(retval.result, retval.msg)
+		else:
+			tkinter.messagebox.showinfo("Info", retval.msg)
+		
 	def saveCfgFile(self):
 		try:
 			self.cfg.cp.add_section("OutFile")
 		except:
 			print("section exist")
 		outFileName = self.outputFilePathEntry.get().strip()
-		self.cfg.cp.set("OutFile", "Name", ''.join([x.encode('utf-8') for x in outFileName]))
-		self.cfg.cp.set("OutFile", "Size", self.v.get())
-		
-		self.tv.update_filesdata()
-		
-		csvop.writeDataFile(self.tv.filesdata, "data.csv")	
-		
+		self.cfg.cp['OutFile']['Name'] = outFileName
+		self.cfg.cp['OutFile']['Size'] = self.v.get()
 		self.cfg.write()
+
+		self.tv.update_filesdata()
+		csvop.writeDataFile(self.tv.filesdata, "data.csv")	
+
 		return
 	
 	def updateProgress(self, value):
-		#print value
 		self.pbar["value"] = int(value * self.pbar["maximum"])
 		self.update_idletasks()
-		#print self.pbar["value"]
 
 app = Application() 
 app.master.title('FlashImgGen') 
