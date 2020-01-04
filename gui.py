@@ -18,30 +18,33 @@ class AddFrame(tkinter.ttk.Frame):
 		self.createWidgets()
 		
 	def createWidgets(self):
-		curRow = 0
-		label = tkinter.ttk.Label(self, text="File:", justify=tk.LEFT)
-		label.grid(row = curRow)
-
-		self.fileEntry = tkinter.ttk.Entry(self)
-		self.fileEntry.delete(0, tk.END)
-		self.fileEntry.grid(row=curRow, column=1)		
-
-		curRow += 1
-		label = tkinter.ttk.Label(self, text="Offset(HEX):", justify=tk.LEFT)
-		label.grid(row=curRow)
-
-		self.offEntry = tkinter.ttk.Entry(self)
-		self.offEntry.delete(0, tk.END)
-		self.offEntry.grid(row=curRow, column=1)		
-
-		self.getFileBtn = tkinter.ttk.Button(self, text="Choose", command=self.chooseFile, width=10)
-		self.getFileBtn.grid(row=0, column=2)
+		dataframe = tkinter.ttk.Frame(self)
+		dataframe.grid(row = 0, pady=3)
 		
-		curRow += 1
-		OKBtn = tkinter.ttk.Button(self, text="OK", command=self.addRecord)
-		OKBtn.grid(row=curRow)
-		CancelBtn = tkinter.ttk.Button(self, text="Cancel", command=self.cancelAdd)
-		CancelBtn.grid(row=curRow, column=1)
+		label = tkinter.ttk.Label(dataframe, text="File:", justify=tk.LEFT)
+		label.grid(row=0, sticky=tk.E, padx=6, pady=3)
+
+		self.fileEntry = tkinter.ttk.Entry(dataframe)
+		self.fileEntry.delete(0, tk.END)
+		self.fileEntry.grid(row=0, column=1, padx=6, pady=3)		
+
+		self.getFileBtn = tkinter.ttk.Button(dataframe, text="Choose", command=self.chooseFile, width=10)
+		self.getFileBtn.grid(row=0, column=2, padx=6, pady=3)
+
+		label = tkinter.ttk.Label(dataframe, text="Offset(HEX):", justify=tk.LEFT)
+		label.grid(row=1, sticky=tk.E, padx=6, pady=3)
+
+		self.offEntry = tkinter.ttk.Entry(dataframe)
+		self.offEntry.delete(0, tk.END)
+		self.offEntry.grid(row=1, column=1, padx=6, pady=3)		
+
+		btnframe = tkinter.ttk.Frame(self)
+		btnframe.grid(row = 1, pady=3)
+		
+		OKBtn = tkinter.ttk.Button(btnframe, text="OK", command=self.addRecord)
+		OKBtn.grid(row=0, padx=6)
+		CancelBtn = tkinter.ttk.Button(btnframe, text="Cancel", command=self.cancelAdd)
+		CancelBtn.grid(row=0, column=1, padx=6)
 
 	def addRecord(self):
 		filename = self.fileEntry.get()
