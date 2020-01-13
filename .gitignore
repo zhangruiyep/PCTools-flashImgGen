@@ -1,5 +1,6 @@
 # custom
 *.ini
+!map.ini
 *.csv
 *.bin
 

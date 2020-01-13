@@ -9,6 +9,47 @@ import cfg
 import csvop
 import flashImage
 
+
+class filesData():
+	def __init__(self, filename="data.csv"):
+		self.filename = filename
+		self.data = csvop.readDataFile(filename)
+		self.map = cfg.configFile("map.ini")
+		
+	def getIdxByName(self, filename):
+		# get index by name
+		basename = os.path.basename(filename)
+		#print(basename)
+		try:
+			idx = int(basename[4:6])
+		except:
+			tkinter.messagebox.showerror("Invalid", "File Name Invalid: " + basename)
+			return -1
+		
+		if idx < 1 or idx > 18 or (idx > 13 and idx < 18):
+			tkinter.messagebox.showerror("Invalid", "File Index Invalid: " + basename)
+			return -1
+		
+		return idx
+
+	def getOffsetByName(self,filename):
+		idx = self.getIdxByName(filename)
+		#print(idx)
+		off = int(self.map.cp["FlashMap"][str(idx)], 16)
+		#print(off)
+		return off
+	
+	def isExist(self, filename):
+		idx = self.getIdxByName(filename)
+		for f in self.data:
+			if self.getIdxByName(f[0]) == idx:
+				return True
+		return False
+	
+	def write(self):
+		csvop.writeDataFile(self.data, self.filename)	
+	
+
 class AddFrame(tkinter.ttk.Frame):
 	def __init__(self, master=None, parentIdx=""):
 		tkinter.ttk.Frame.__init__(self, master)
@@ -31,13 +72,6 @@ class AddFrame(tkinter.ttk.Frame):
 		self.getFileBtn = tkinter.ttk.Button(dataframe, text="Choose", command=self.chooseFile, width=10)
 		self.getFileBtn.grid(row=0, column=2, padx=6, pady=3)
 
-		label = tkinter.ttk.Label(dataframe, text="Offset(HEX):", justify=tk.LEFT)
-		label.grid(row=1, sticky=tk.E, padx=6, pady=3)
-
-		self.offEntry = tkinter.ttk.Entry(dataframe)
-		self.offEntry.delete(0, tk.END)
-		self.offEntry.grid(row=1, column=1, padx=6, pady=3)		
-
 		btnframe = tkinter.ttk.Frame(self)
 		btnframe.grid(row = 1, pady=3)
 		
@@ -52,14 +86,18 @@ class AddFrame(tkinter.ttk.Frame):
 			tkinter.messagebox.showwarning("Warning", "File not found")
 			return
 		
-		offsetStr = self.offEntry.get()
-		try:
-			offset = int(offsetStr, 16)
-		except:
-			tkinter.messagebox.showwarning("Warning", "Offset Invalid")
+		#print(filename)
+		
+		self.tv.update_filesdata()
+
+		if self.tv.filesdata.isExist(filename):
+			tkinter.messagebox.showerror("Error", "File %s index exist already!" % filename)
+			self.destroy()
 			return
 		
-		self.tv.insert(self.parentIdx, "end", values=(filename, self.offEntry.get()))
+		self.tv.insert(self.parentIdx, "end", values=(filename,))
+
+		self.tv.update_filesdata()
 
 		self.destroy()
 
@@ -78,37 +116,32 @@ def takeOffset(elem):
 class filesTreeview(tkinter.ttk.Treeview):
 	def __init__(self, master=None):
 		tkinter.ttk.Treeview.__init__(self, master)
-		self['columns']=("filename", "offset")
-		self.filesdata = []
+		self['columns']=("filename")
+		self.filesdata = filesData()
 		self.grid(sticky=tk.NSEW)
 		self.createWidgets()
 	
 	def createWidgets(self):
 		self.column("#0", width=20, stretch=0)
-		self.column("filename", width=400)
-		self.column("offset", width=100)
-
+		self.column("filename", width=500)
 		self.heading('filename', text='File Name')
-		self.heading('offset', text='Offset')
 		
-	def fill_treeview(self, filesdata):
-		self.filesdata = filesdata
+	def fill_treeview(self):
 		for item in self.get_children():
 			self.delete(item)
 			
-		for f in self.filesdata:
-			self.insert('',"end",values=(f[0], f[1]))
-
+		for f in self.filesdata.data:
+			self.insert('',"end",values=(f[0],))
 	
 	def update_filesdata(self):
-		self.filesdata = []
+		self.filesdata.data = []
 		for i in self.get_children():
-			if type(self.item(i)["values"][1]) == int:
-				off = int(str(self.item(i)["values"][1]), 16)
-			else:
-				off = int(self.item(i)["values"][1], 16)
-			self.filesdata.append([self.item(i)["values"][0], off])
-		self.filesdata.sort(key=takeOffset)
+			off = self.filesdata.getOffsetByName(self.item(i)["values"][0])
+			if off != -1:
+				self.filesdata.data.append([self.item(i)["values"][0], off])
+		self.filesdata.data.sort(key=takeOffset)
+	
+		
 					
 class Application(tkinter.ttk.Frame):
 	def __init__(self, master=None):
@@ -125,11 +158,7 @@ class Application(tkinter.ttk.Frame):
 		
 		self.tv = filesTreeview(tv_frame)
 		self.tv.grid(row = 0, sticky=tk.NSEW)
-		try:
-			filesdata = csvop.readDataFile("data.csv")
-		except:
-			filesdata = []
-		self.tv.fill_treeview(filesdata)
+		self.tv.fill_treeview()
 				
 		self.sb = tkinter.ttk.Scrollbar(tv_frame, orient=tk.VERTICAL, command=self.tv.yview)
 		self.sb.grid(row = 0, column=1, sticky=tk.NS)
@@ -223,8 +252,7 @@ class Application(tkinter.ttk.Frame):
 		
 		parent = self.tv.parent(self.edit_row)
 		self.addDataFrame(parent)
-			
-			
+		
 	def addDataFrame(self, parentItem):
 		#x,y,width,height = self.tv.bbox(parentItem)
 		
@@ -232,19 +260,7 @@ class Application(tkinter.ttk.Frame):
 			self.record_frame.destroy()
 
 		self.record_frame = AddFrame(self.tv, parentItem)
-		self.record_frame.place(x=0, y=20, anchor=tk.NW)			
-		
-
-	def entryEnter(self, event):
-		entry_text = self.entryPopup.get()
-		#print entry_text
-		self.tv.set(self.edit_row, column=self.edit_column, value=entry_text)
-		self.tv.update_accs()
-		self.tv.update_yrr()
-		self.entryPopup.destroy()
-	
-	def entryEntryDestroy(self, event):
-		self.entryPopup.destroy()
+		self.record_frame.place(x=0, y=20, anchor=tk.NW)						
 			
 	def chooseOutputFile(self):
 		filename = tkinter.filedialog.asksaveasfilename()
@@ -263,7 +279,7 @@ class Application(tkinter.ttk.Frame):
 		
 		self.tv.update_filesdata()
 		
-		img = flashImage.flashImage(outputFile, outputSize, self.tv.filesdata, self.updateProgress)
+		img = flashImage.flashImage(outputFile, outputSize, self.tv.filesdata.data, self.updateProgress)
 		retval = img.writeFile()
 		if (retval.result == "Error"):
 			tkinter.messagebox.showerror(retval.result, retval.msg)
@@ -281,7 +297,7 @@ class Application(tkinter.ttk.Frame):
 		self.cfg.write()
 
 		self.tv.update_filesdata()
-		csvop.writeDataFile(self.tv.filesdata, "data.csv")	
+		self.tv.filesdata.write()
 
 		return
 	
