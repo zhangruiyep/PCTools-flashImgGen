@@ -15,6 +15,14 @@ Useage:
 
 Change History:
 ---------------
+* 2020-01-13
+
+	* No need to enter file offset. Offset will map from file index, which is part of file name.
+	
+	* Check if file name contain index value when add file.
+	
+	* Check if file index is exist when add file.
+	
 * 2020-01-04
 	
 	* Update file ops to python 3.8
