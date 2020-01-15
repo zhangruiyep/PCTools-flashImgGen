@@ -46,6 +46,12 @@ class filesData():
 				return True
 		return False
 	
+	def idxValid(self, filename):
+		idx = self.getIdxByName(filename)
+		if idx < 0:
+			return False
+		return True
+	
 	def write(self):
 		csvop.writeDataFile(self.data, self.filename)	
 	
@@ -89,6 +95,10 @@ class AddFrame(tkinter.ttk.Frame):
 		#print(filename)
 		
 		self.tv.update_filesdata()
+		
+		if not self.tv.filesdata.idxValid(filename):
+			self.destroy()
+			return
 
 		if self.tv.filesdata.isExist(filename):
 			tkinter.messagebox.showerror("Error", "File %s index exist already!" % filename)
