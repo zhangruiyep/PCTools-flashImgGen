@@ -5,7 +5,7 @@ def readDataFile(filename):
 	try:
 		f = open(filename, newline='', encoding='utf-8')
 	except:
-		print(filename + "can not open")
+		print(filename + " can not open")
 		return filesdata
 	
 	rdr = csv.reader(f)
