@@ -53,7 +53,10 @@ class filesData():
 		return True
 	
 	def write(self):
-		csvop.writeDataFile(self.data, self.filename)	
+		csvop.writeDataFile(self.data, self.filename)
+	
+	def getLen(self):
+		return len(self.data)
 	
 
 class AddFrame(tkinter.ttk.Frame):
@@ -63,12 +66,13 @@ class AddFrame(tkinter.ttk.Frame):
 		self.tv = master
 		self.parentIdx = parentIdx
 		self.createWidgets()
+		self.files = ()
 		
 	def createWidgets(self):
 		dataframe = tkinter.ttk.Frame(self)
 		dataframe.grid(row = 0, pady=3)
 		
-		label = tkinter.ttk.Label(dataframe, text="File:", justify=tk.LEFT)
+		label = tkinter.ttk.Label(dataframe, text="File(s):", justify=tk.LEFT)
 		label.grid(row=0, sticky=tk.E, padx=6, pady=3)
 
 		self.fileEntry = tkinter.ttk.Entry(dataframe)
@@ -87,25 +91,27 @@ class AddFrame(tkinter.ttk.Frame):
 		CancelBtn.grid(row=0, column=1, padx=6)
 
 	def addRecord(self):
-		filename = self.fileEntry.get()
-		if not os.path.exists(filename):
-			tkinter.messagebox.showwarning("Warning", "File not found")
-			return
+		filenames = self.files
+		count = len(filenames)
+		for i in range(0, count):
+			filename = filenames[i]
+			#print(filename)
+			if not os.path.exists(filename):
+				tkinter.messagebox.showwarning("Warning", "%s File not found" % filename)
+				return
 		
-		#print(filename)
+			self.tv.update_filesdata()
 		
-		self.tv.update_filesdata()
-		
-		if not self.tv.filesdata.idxValid(filename):
-			self.destroy()
-			return
+			if not self.tv.filesdata.idxValid(filename):
+				self.destroy()
+				return
 
-		if self.tv.filesdata.isExist(filename):
-			tkinter.messagebox.showerror("Error", "File %s index exist already!" % filename)
-			self.destroy()
-			return
+			if self.tv.filesdata.isExist(filename):
+				tkinter.messagebox.showerror("Error", "File %s index exist already!" % filename)
+				self.destroy()
+				return
 		
-		self.tv.insert(self.parentIdx, "end", values=(filename,))
+			self.tv.insert(self.parentIdx, "end", values=(filename,))
 
 		self.tv.update_filesdata()
 
@@ -115,10 +121,13 @@ class AddFrame(tkinter.ttk.Frame):
 		self.destroy()
 		
 	def chooseFile(self):
-		filename = tkinter.filedialog.askopenfilename()
-		if (filename != None) and (filename != ""):
-			self.fileEntry.delete(0, tk.END)
-			self.fileEntry.insert(0, os.path.realpath(filename))
+		filenames = tkinter.filedialog.askopenfilenames()
+		#print(filenames)
+		self.files = filenames
+		self.fileEntry.delete(0, tk.END)
+		for filename in filenames:
+			if (filenames != None) and (filenames != ""):
+				self.fileEntry.insert(tk.END, os.path.realpath(filename) + ",")
 
 def takeOffset(elem):
 	return elem[1]
@@ -150,6 +159,7 @@ class filesTreeview(tkinter.ttk.Treeview):
 			if off != -1:
 				self.filesdata.data.append([self.item(i)["values"][0], off])
 		self.filesdata.data.sort(key=takeOffset)
+		self.fill_treeview()
 	
 		
 					
@@ -289,6 +299,9 @@ class Application(tkinter.ttk.Frame):
 		
 		self.tv.update_filesdata()
 		
+		if self.tv.filesdata.getLen() != 14:
+			tkinter.messagebox.showwarning("Warning", "There should be 14 files, please check it.")			
+		
 		img = flashImage.flashImage(outputFile, outputSize, self.tv.filesdata.data, self.updateProgress)
 		retval = img.writeFile()
 		if (retval.result == "Error"):
@@ -313,6 +326,7 @@ class Application(tkinter.ttk.Frame):
 	
 	def updateProgress(self, value):
 		self.pbar["value"] = int(value * self.pbar["maximum"])
+		#print("Progress %f" % value)
 		self.update_idletasks()
 
 app = Application() 
