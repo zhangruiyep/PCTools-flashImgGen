@@ -3,6 +3,7 @@ python:
   - "2.7"
   # PyPy versions
   - "pypy"   # currently Python 2.7.13, PyPy 7.1.1
+dist: bionic
 services:
   - xvfb
 # command to install dependencies
