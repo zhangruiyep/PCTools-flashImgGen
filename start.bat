@@ -1,1 +1,1 @@
-d:\python27\python.exe flashImgGen.py
+python.exe flashImgGen.py

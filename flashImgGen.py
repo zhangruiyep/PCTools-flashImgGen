@@ -1,8 +1,9 @@
-import Tkinter as tk
-import tkFileDialog
-import tkMessageBox
 import os
-import ttk
+import tkinter as tk
+import tkinter.filedialog
+import tkinter.messagebox
+import tkinter.ttk as ttk
+import types
 import types
 import datetime
 import cfg
@@ -156,7 +157,7 @@ class Application(ttk.Frame):
 				self.outputFilePathEntry.delete(0, tk.END)
 				self.outputFilePathEntry.insert(0, self.cfg.cp.get("OutFile", "Name"))
 			except:
-				print "can not get file name from cfg"
+				print("can not get file name from cfg")
 
 		self.getFileBtn = ttk.Button(output_frame, text="Choose", command=self.chooseOutputFile, width=10)
 		self.getFileBtn.grid(row=0, column=2, padx=10)
@@ -174,7 +175,7 @@ class Application(ttk.Frame):
 			try:
 				self.v.set(self.cfg.cp.get("OutFile", "Size"))
 			except:
-				print "can not get file size from cfg"
+				print("can not get file size from cfg")
 			
 		self.platformOpt = ttk.OptionMenu(flashOptionFrame, self.v, *optionList)
 		self.platformOpt.grid(row = 0, column=1, sticky=tk.W, padx=10)
@@ -309,7 +310,7 @@ class Application(ttk.Frame):
 		try:
 			self.cfg.cp.add_section("OutFile")
 		except:
-			print "section exist"
+			print("section exist")
 		outFileName = self.outputFilePathEntry.get().strip()
 		self.cfg.cp.set("OutFile", "Name", ''.join([x.encode('utf-8') for x in outFileName]))
 		self.cfg.cp.set("OutFile", "Size", self.v.get())
@@ -328,7 +329,7 @@ class Application(ttk.Frame):
 		#print self.pbar["value"]
 
 app = Application() 
-app.master.title('FlashImgGen') 
+app.master.title('FlashImgGen V2.0') 
 app.master.rowconfigure(0, weight=1)
 app.master.columnconfigure(0, weight=1)
 app.mainloop() 
