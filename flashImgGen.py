@@ -330,7 +330,7 @@ class Application(ttk.Frame):
 		#print self.pbar["value"]
 
 app = Application() 
-app.master.title('FlashImgGen V2.0') 
+app.master.title('FlashImgGen V2.1')
 app.master.rowconfigure(0, weight=1)
 app.master.columnconfigure(0, weight=1)
 app.mainloop() 
