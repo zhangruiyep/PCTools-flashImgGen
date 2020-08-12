@@ -26,7 +26,7 @@ class filesData():
 			tkinter.messagebox.showerror("Invalid", "File Name Invalid: " + basename)
 			return -1
 		
-		if idx < 1 or idx > 18 or (idx > 13 and idx < 18):
+		if idx < 1 or idx > 18 or (idx > 14 and idx < 18):
 			tkinter.messagebox.showerror("Invalid", "File Index Invalid: " + basename)
 			return -1
 		
@@ -299,8 +299,8 @@ class Application(tkinter.ttk.Frame):
 		
 		self.tv.update_filesdata()
 		
-		if self.tv.filesdata.getLen() != 14:
-			tkinter.messagebox.showwarning("Warning", "There should be 14 files, please check it.")			
+		if self.tv.filesdata.getLen() != 15:
+			tkinter.messagebox.showwarning("Warning", "There should be 15 files, please check it.")			
 		
 		img = flashImage.flashImage(outputFile, outputSize, self.tv.filesdata.data, self.updateProgress)
 		retval = img.writeFile()
@@ -330,7 +330,7 @@ class Application(tkinter.ttk.Frame):
 		self.update_idletasks()
 
 app = Application() 
-app.master.title('FlashImgGen') 
+app.master.title('FlashImgGen V2.2') 
 app.master.rowconfigure(0, weight=1)
 app.master.columnconfigure(0, weight=1)
 app.mainloop() 
