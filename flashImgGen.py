@@ -46,14 +46,14 @@ class AddFrame(ttk.Frame):
 	def addRecord(self):
 		filename = self.fileEntry.get()
 		if not os.path.exists(filename):
-			tkMessageBox.showwarning("Warning", "File not found")
+			tkinter.messagebox.showwarning("Warning", "File not found")
 			return
 		
 		offsetStr = self.offEntry.get()
 		try:
 			offset = int(offsetStr, 16)
 		except:
-			tkMessageBox.showwarning("Warning", "Offset Invalid")
+			tkinter.messagebox.showwarning("Warning", "Offset Invalid")
 			return
 		
 		self.tv.insert(self.parentIdx, "end", values=(filename, self.offEntry.get()))
@@ -64,7 +64,7 @@ class AddFrame(ttk.Frame):
 		self.destroy()
 		
 	def chooseFile(self):
-		filename = tkFileDialog.askopenfilename()
+		filename = tkinter.filedialog.askopenfilename()
 		if (filename != None) and (filename != ""):
 			self.fileEntry.delete(0, tk.END)
 			self.fileEntry.insert(0, os.path.realpath(filename))
@@ -103,7 +103,7 @@ class filesTreeview(ttk.Treeview):
 		self.filesdata = []
 		for i in self.get_children():
 			#print self.item(i)["values"]
-			if type(self.item(i)["values"][1]) == types.IntType:
+			if type(self.item(i)["values"][1]) == int:
 				off = int(str(self.item(i)["values"][1]), 16)
 			else:
 				off = int(self.item(i)["values"][1], 16)
@@ -255,7 +255,7 @@ class Application(ttk.Frame):
 		self.entryPopup.destroy()
 			
 	def chooseOutputFile(self):
-		filename = tkFileDialog.asksaveasfilename()
+		filename = tkinter.filedialog.asksaveasfilename()
 		if (filename != None) and (filename != ""):
 			self.outputFilePathEntry.delete(0, tk.END)
 			self.outputFilePathEntry.insert(0, os.path.realpath(filename))
@@ -263,7 +263,7 @@ class Application(ttk.Frame):
 	def genOutFile(self):
 		outputFile = self.outputFilePathEntry.get().strip()
 		if not outputFile:
-			tkMessageBox.showwarning("Warning", "Output file not set")
+			tkinter.messagebox.showwarning("Warning", "Output file not set")
 			return
 		#print outputFile
 		
@@ -274,7 +274,7 @@ class Application(ttk.Frame):
 		self.tv.update_filesdata()
 		
 		if self.writeOutputFile(outputFile, outputSize) == True:
-			tkMessageBox.showinfo("Info", "Done.")
+			tkinter.messagebox.showinfo("Info", "Done.")
 	
 	def writeOutputFile(self, filename, size):
 		fo = open(filename, "wb")
@@ -282,7 +282,7 @@ class Application(ttk.Frame):
 		for fdata in self.tv.filesdata:
 			#print fdata
 			if fo.tell() > fdata[1]:
-				tkMessageBox.showerror("Error", "OVERLAP %s" % fdata[0])
+				tkinter.messagebox.showerror("Error", "OVERLAP %s" % fdata[0])
 				return False
 				
 			self.updateProgress(float(fo.tell())/size)
@@ -294,7 +294,7 @@ class Application(ttk.Frame):
 			fi = open(fdata[0], "rb")			
 			fo.write(fi.read())
 			if (fo.tell() > size):
-				tkMessageBox.showerror("Error", "%s out of flash" % fdata[0])
+				tkinter.messagebox.showerror("Error", "%s out of flash" % fdata[0])
 				return False
 			self.updateProgress(float(fo.tell())/size)
 			
@@ -312,7 +312,8 @@ class Application(ttk.Frame):
 		except:
 			print("section exist")
 		outFileName = self.outputFilePathEntry.get().strip()
-		self.cfg.cp.set("OutFile", "Name", ''.join([x.encode('utf-8') for x in outFileName]))
+		#print(outFileName)
+		self.cfg.cp.set("OutFile", "Name", outFileName)
 		self.cfg.cp.set("OutFile", "Size", self.v.get())
 		
 		self.tv.update_filesdata()
